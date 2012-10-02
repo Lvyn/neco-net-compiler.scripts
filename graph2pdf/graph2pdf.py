@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 This script produces a pdf file from neco graph output (graph and map files).
 

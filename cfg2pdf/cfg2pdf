@@ -1,0 +1,125 @@
+#!/bin/sh
+
+REDUCE=--pid-normalization
+DELETE=1
+CFG_FILE=
+DEFAULT_PDF_FILE="out.pdf"
+PDF_FILE=$DEFAULT_PDF_FILE
+
+usage() {
+	echo "usage: cfg2pdf [-h] [-nr] [-no-delete] [-pdf OUTPUT] CFGFILE"
+	echo
+	echo "optional arguments:"
+	echo " -h            this usage message"
+	echo " -nr           disable reductions (default: enabled)"
+	echo " -pdf OUTPUT   setup OUTPUT as PDF output file (default: $PDF_FILE)"
+	echo " -no-delete    do not delete intermediate files (default: do delete files)"
+}
+
+while [ $# -ge 1 ]
+do
+	case "$1" in
+	-nr | --nr)
+		# disable reductions
+		REDUCE=""
+	;;
+	-pdf | --pdf)
+		# setup pdf output file
+		if [ $# -le 1 ]; then
+			echo "missing argument for --pdf"
+			echo
+			usage
+			exit 1
+		fi
+		shift 1
+		PDF_FILE=$1
+	;;
+	--help | -help | -h)
+		usage
+		exit 0
+	;;
+	-no-delete | --no-delete)
+		DELETE=0
+	;;
+	*)
+		CFG_FILE=$1
+	;;
+	esac
+	shift 1
+done
+
+echo
+echo "################################################################################"
+echo "# cfg2pdf "
+echo "################################################################################"
+echo
+
+if [ "$CFG_FILE" = "" ]; then
+	echo "A CFG input file must be specified"
+	echo
+	usage
+	exit 1
+fi
+
+if [ "$REDUCE" = "" ]; then
+	echo "Reductions disabled."
+else
+	echo "Reductions enabled."
+fi
+
+echo "CFG input file: $CFG_FILE"
+echo "PDF output file: $PDF_FILE"
+if [ "$DELETE" = "1" ]; then
+	echo "Delete intermediate files: True"
+else 
+	echo "Delete intermediate files: False"
+fi
+
+echo
+echo "################################################################################"
+echo
+
+SUFFIX="$$"
+MOD_NAME="net_$SUFFIX"
+NET_FILE="$MOD_NAME.py"
+
+GRAPH_FILE="graph_$SUFFIX"
+MAP_FILE="map_$SUFFIX"
+
+echo "################################################################################"
+echo "# 1. Creating net from "
+echo "#    cfg2net.py $CFG_FILE > $NET_FILE"
+echo "################################################################################"
+
+cfg2net.py $CFG_FILE > $NET_FILE
+
+echo "################################################################################"
+echo "# 2. Compiling net "
+echo "#    neco-compile -m $MOD_NAME $REDUCE"
+echo "################################################################################"
+
+neco-compile -m $MOD_NAME $REDUCE
+
+
+echo "################################################################################"
+echo "# 3. Building state space "
+echo "#    neco-explore --graph $MAP_FILE $GRAPH_FILE"
+echo "################################################################################"
+
+neco-explore --graph $MAP_FILE $GRAPH_FILE
+
+echo "################################################################################"
+echo "# 4. Printing Graph (PDF) "
+echo "#    graph2pdf.py -g $GRAPH_FILE -m $MAP_FILE -o $PDF_FILE"
+echo "################################################################################"
+
+graph2pdf.py -g $GRAPH_FILE -m $MAP_FILE -o $PDF_FILE
+
+if [ "$DELETE" = "1" ]; then
+	echo "################################################################################"
+	echo "# 5. Deleting intermediate files "
+	echo "#    rm -rf $NET_FILE ${NET_FILE}c $GRAPH_FILE $MAP_FILE trace net.py net.pyc"
+	echo "################################################################################"
+
+	rm -rf $NET_FILE ${NET_FILE}c $GRAPH_FILE $MAP_FILE trace net.py net.pyc
+fi

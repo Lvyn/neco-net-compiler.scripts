@@ -1,50 +1,50 @@
 #!/usr/bin/python
-#
-# == Usage ==
-#
-# This script produces a neco/snakes Petri net out of a CFG.
-# Usage: python cfg2net.py CFG_FILE
-#
-# CFG_FILE is a CFG described using the syntax below.
-#
-#
-# == CFG syntax ==
-#
-# Each line ends with a semicolon, all text after a semicolon is
-# considered as comment. You can put a semicolon at the beginning of a
-# line to comment the whole line.
-#
-# The initial marking can be specified with the init statement:
-# init place * threads;
-# where 'init' is a keyword, place is a place name, and thread is the
-# count of threads in this place. For example, " init p1*2; " means
-# that there a two threads in place p1 at initial marking.
-#
-# Synchronisations, ie., barriers can be specified with the barrier
-# statement:
-# barrier place * threads;
-# where barrier is a keyword, place is a place name, and threads is
-# the count of threads needed to achieve synchronisation step. For
-# example, " barrier p2*2; ".
-#
-# The transition relation is specified with transition statements:
-# begin -> end;
-# where begin is the entry place, and end the exit place.
-#
-# == Example ==
-#
-# ; initial state
-# init p1*2;
-#
-# ; barriers
-# barrier p2*2;
-#
-# ; transition relation
-# p1 -> p2;
-# p1 -> p3;
-# p2 -> p4;
-# p3 -> p4;
-#
+'''
+ == Usage ==
+
+ This script produces a neco/snakes Petri net out of a CFG.
+ Usage: python cfg2net.py CFG_FILE
+
+ CFG_FILE is a CFG described using the syntax below.
+
+
+ == CFG syntax ==
+
+ Each line ends with a semicolon, all text after a semicolon is
+ considered as comment. You can put a semicolon at the beginning of a
+ line to comment the whole line.
+
+ The initial marking can be specified with the init statement:
+ init place * threads;
+ where 'init' is a keyword, place is a place name, and thread is the
+ count of threads in this place. For example, " init p1*2; " means
+ that there a two threads in place p1 at initial marking.
+
+ Synchronisations, ie., barriers can be specified with the barrier
+ statement:
+ barrier place * threads;
+ where barrier is a keyword, place is a place name, and threads is
+ the count of threads needed to achieve synchronisation step. For
+ example, " barrier p2*2; ".
+
+ The transition relation is specified with transition statements:
+ begin -> end;
+ where begin is the entry place, and end the exit place.
+
+ == Example ==
+
+ ; initial state
+ init p1*2;
+
+ ; barriers
+ barrier p2*2;
+
+ ; transition relation
+ p1 -> p2;
+ p1 -> p3;
+ p2 -> p4;
+ p3 -> p4;
+'''
 
 import re, sys
 from collections import defaultdict
